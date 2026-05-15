@@ -1,36 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dashboard Comercial 2026</title>
+<title>Dashboard Comercial</title>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
-*{
-    box-sizing:border-box;
-}
-
 body{
     margin:0;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial;
     background:#f3f4f6;
-    color:#111827;
 }
 
 header{
     background:#111827;
     color:white;
     padding:20px;
-}
-
-header h1{
-    margin:0;
-    font-size:30px;
 }
 
 .container{
@@ -44,11 +35,10 @@ header h1{
     margin-bottom:25px;
 }
 
-select,input{
+select{
     padding:12px;
-    border-radius:12px;
+    border-radius:10px;
     border:1px solid #d1d5db;
-    font-size:14px;
     background:white;
 }
 
@@ -56,12 +46,12 @@ select,input{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:20px;
-    margin-bottom:30px;
+    margin-bottom:25px;
 }
 
 .card{
     background:white;
-    border-radius:18px;
+    border-radius:16px;
     padding:20px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
@@ -69,25 +59,85 @@ select,input{
 .card h3{
     margin:0;
     color:#6b7280;
-    font-size:15px;
 }
 
 .card p{
+    font-size:28px;
     margin-top:10px;
-    font-size:30px;
     font-weight:bold;
 }
 
 .section{
     background:white;
-    border-radius:18px;
+    border-radius:16px;
     padding:20px;
     margin-top:25px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
-.section h2{
-    margin-top:0;
+.calendar-header{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.calendar-header div{
+    text-align:center;
+    font-weight:bold;
+}
+
+.calendar{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+}
+
+.day{
+    background:white;
+    border-radius:14px;
+    padding:10px;
+    min-height:150px;
+    cursor:pointer;
+    border-left:6px solid #10b981;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.day:hover{
+    transform:scale(1.02);
+}
+
+.red{
+    border-left-color:#ef4444;
+}
+
+.yellow{
+    border-left-color:#f59e0b;
+}
+
+.green{
+    border-left-color:#10b981;
+}
+
+.day-number{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.day-name{
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:8px;
+}
+
+.day-data{
+    font-size:12px;
+    margin-top:5px;
+}
+
+.empty{
+    background:transparent;
+    box-shadow:none;
 }
 
 table{
@@ -112,94 +162,14 @@ tr:hover{
     background:#f9fafb;
 }
 
-.calendar-header{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:10px;
-    margin-bottom:10px;
-}
-
-.calendar-header div{
-    text-align:center;
-    font-weight:bold;
-}
-
-.calendar{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    gap:10px;
-}
-
-.day{
-    background:white;
-    border-radius:14px;
-    min-height:150px;
-    padding:10px;
-    cursor:pointer;
-    border-left:6px solid #10b981;
-    box-shadow:0 2px 6px rgba(0,0,0,.08);
-    transition:.2s;
-}
-
-.day:hover{
-    transform:scale(1.02);
-}
-
-.day.red{
-    border-left-color:#ef4444;
-}
-
-.day.yellow{
-    border-left-color:#f59e0b;
-}
-
-.day.green{
-    border-left-color:#10b981;
-}
-
-.day-number{
-    font-weight:bold;
-    font-size:18px;
-}
-
-.day-name{
-    font-size:12px;
-    color:#6b7280;
-    margin-bottom:8px;
-}
-
-.day-data{
-    font-size:12px;
-    margin-top:5px;
-}
-
-.empty{
-    background:transparent;
-    box-shadow:none;
-}
-
-canvas{
-    margin-top:20px;
-}
-
-@media(max-width:900px){
-
-    .calendar{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .calendar-header{
-        display:none;
-    }
-}
-
 </style>
+
 </head>
 
 <body>
 
 <header>
-<h1>Dashboard Comercial 2026</h1>
+<h1>Dashboard Comercial Mayo 2026</h1>
 </header>
 
 <div class="container">
@@ -216,10 +186,6 @@ canvas{
 
 <select id="clasificacionFilter">
 <option value="">Todas las clasificaciones</option>
-</select>
-
-<select id="mesFilter">
-<option value="4">Mayo 2026</option>
 </select>
 
 </div>
@@ -260,17 +226,10 @@ canvas{
 
 <div class="section">
 
-<h2>Ventas por Día</h2>
-
-<canvas id="ventasChart"></canvas>
-
-</div>
-
-<div class="section">
-
 <h2>Calendario Mayo 2026</h2>
 
 <div class="calendar-header">
+
 <div>Lunes</div>
 <div>Martes</div>
 <div>Miércoles</div>
@@ -278,6 +237,7 @@ canvas{
 <div>Viernes</div>
 <div>Sábado</div>
 <div>Domingo</div>
+
 </div>
 
 <div class="calendar" id="calendar"></div>
@@ -291,6 +251,7 @@ canvas{
 <table>
 
 <thead>
+
 <tr>
 <th>Fecha</th>
 <th>Día</th>
@@ -303,6 +264,7 @@ canvas{
 <th>Costo</th>
 <th>Utilidad</th>
 </tr>
+
 </thead>
 
 <tbody id="tablaVentas"></tbody>
@@ -315,10 +277,10 @@ canvas{
 
 <script>
 
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDY9ek9N_ePgcaLznpzxUj8aZfJvWsbmjDMdC972iN8OVsxIz-cNLM0rpmLPyD2OztamjBYoZKSUUf/pub?output=csv";
+const csvUrl =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vRDY9ek9N_ePgcaLznpzxUj8aZfJvWsbmjDMdC972iN8OVsxIz-cNLM0rpmLPyD2OztamjBYoZKSUUf/pub?output=csv";
 
 let ventas = [];
-let chart;
 
 const dias = [
 'Domingo',
@@ -334,20 +296,27 @@ function limpiarNumero(valor){
 
     if(!valor) return 0;
 
-    return parseFloat(
-        valor
-        .toString()
-        .replace(/\$/g,'')
-        .replace(/,/g,'')
-        .replace(/\s/g,'')
-    ) || 0;
+    valor = valor.toString();
+
+    valor = valor.replace(/"/g,'');
+
+    valor = valor.replace(/\$/g,'');
+
+    valor = valor.replace(/,/g,'');
+
+    valor = valor.trim();
+
+    return Number(valor) || 0;
 }
 
-function convertirFecha(fechaStr){
+function convertirFecha(fecha){
 
-    if(!fechaStr) return new Date();
+    if(!fecha) return null;
 
-    let partes = fechaStr.split('/');
+    let partes = fecha.split('/');
+
+    if(partes.length != 3)
+        return null;
 
     return new Date(
         partes[2],
@@ -361,39 +330,63 @@ function cargarDatos(){
     Papa.parse(csvUrl,{
 
         download:true,
+
         header:true,
+
+        skipEmptyLines:true,
+
+        dynamicTyping:false,
+
+        quoteChar:'"',
 
         complete:function(results){
 
             ventas = results.data.map(v=>{
 
-                let fecha = convertirFecha(v.FECHA);
+                let fecha =
+                    convertirFecha(v.FECHA);
 
-                let importe = limpiarNumero(v.IMPORTE);
-                let costo = limpiarNumero(v.COSTO);
-                let cantidad = limpiarNumero(v.CANTIDAD);
+                if(!fecha)
+                    return null;
+
+                let importe =
+                    limpiarNumero(v.IMPORTE);
+
+                let costo =
+                    limpiarNumero(v.COSTO);
+
+                let cantidad =
+                    limpiarNumero(v.CANTIDAD);
 
                 return{
 
                     ...v,
 
+                    fechaObj:fecha,
+
                     IMPORTE:importe,
+
                     COSTO:costo,
+
                     CANTIDAD:cantidad,
 
                     utilidad:importe-costo,
 
-                    fechaObj:fecha,
-
-                    dia:dias[fecha.getDay()]
+                    dia:dias[
+                        fecha.getDay()
+                    ]
                 }
 
-            });
+            }).filter(v=>v);
 
             cargarFiltros();
+
             render();
+
         }
+
     });
+
 }
 
 function cargarFiltros(){
@@ -422,45 +415,58 @@ function cargarFiltros(){
 
 function llenarSelect(id,data){
 
-    let select = document.getElementById(id);
+    let select =
+        document.getElementById(id);
 
-    if(select.options.length > 1) return;
+    if(select.options.length > 1)
+        return;
 
     data.sort().forEach(item=>{
 
         if(!item) return;
 
-        let option = document.createElement("option");
+        let option =
+            document.createElement("option");
 
         option.value = item;
+
         option.textContent = item;
 
         select.appendChild(option);
 
     });
+
 }
 
-document.querySelectorAll("select").forEach(el=>{
+document.querySelectorAll("select")
+.forEach(el=>{
 
-    el.addEventListener("change",render);
+    el.addEventListener(
+        "change",
+        ()=>render()
+    );
 
 });
 
-function render(fechaSeleccionada = null){
+function render(fechaFiltro=null){
 
     let vendedor =
-        document.getElementById("vendedorFilter").value;
+        document.getElementById(
+            "vendedorFilter"
+        ).value;
 
     let cliente =
-        document.getElementById("clienteFilter").value;
+        document.getElementById(
+            "clienteFilter"
+        ).value;
 
     let clasificacion =
-        document.getElementById("clasificacionFilter").value;
+        document.getElementById(
+            "clasificacionFilter"
+        ).value;
 
-    let mes =
-        parseInt(document.getElementById("mesFilter").value);
-
-    let filtradas = ventas.filter(v=>{
+    let filtradas =
+        ventas.filter(v=>{
 
         let ok = true;
 
@@ -476,15 +482,12 @@ function render(fechaSeleccionada = null){
             v["CLASIFICACION"] != clasificacion)
             ok = false;
 
-        if(v.fechaObj.getMonth() != mes)
-            ok = false;
+        if(fechaFiltro){
 
-        if(fechaSeleccionada){
-
-            let fechaTexto =
+            let fecha =
                 formatearFecha(v.fechaObj);
 
-            if(fechaTexto != fechaSeleccionada)
+            if(fecha != fechaFiltro)
                 ok = false;
         }
 
@@ -493,28 +496,43 @@ function render(fechaSeleccionada = null){
     });
 
     actualizarKPIs(filtradas);
+
     actualizarTabla(filtradas);
-    actualizarGrafica(filtradas);
+
     actualizarCalendario();
 }
 
 function actualizarKPIs(data){
 
     let facturacion =
-        data.reduce((a,b)=>a+b.IMPORTE,0);
+        data.reduce(
+            (a,b)=>a+b.IMPORTE,
+            0
+        );
 
     let costo =
-        data.reduce((a,b)=>a+b.COSTO,0);
+        data.reduce(
+            (a,b)=>a+b.COSTO,
+            0
+        );
 
     let utilidad =
-        data.reduce((a,b)=>a+b.utilidad,0);
+        data.reduce(
+            (a,b)=>a+b.utilidad,
+            0
+        );
 
     let cantidad =
-        data.reduce((a,b)=>a+b.CANTIDAD,0);
+        data.reduce(
+            (a,b)=>a+b.CANTIDAD,
+            0
+        );
 
     let clientes =
         new Set(
-            data.map(v=>v["NOMBRE CLIENTE"])
+            data.map(
+                v=>v["NOMBRE CLIENTE"]
+            )
         ).size;
 
     let margen =
@@ -532,7 +550,7 @@ function actualizarKPIs(data){
     .textContent = money(utilidad);
 
     document.getElementById("cantidad")
-    .textContent = cantidad.toFixed(0);
+    .textContent = cantidad;
 
     document.getElementById("clientes")
     .textContent = clientes;
@@ -545,7 +563,9 @@ function actualizarKPIs(data){
 function actualizarTabla(data){
 
     let tbody =
-        document.getElementById("tablaVentas");
+        document.getElementById(
+            "tablaVentas"
+        );
 
     tbody.innerHTML = "";
 
@@ -578,72 +598,34 @@ function actualizarTabla(data){
         </tr>
 
         `;
-    });
-}
-
-function actualizarGrafica(data){
-
-    let agrupado = {};
-
-    data.forEach(v=>{
-
-        let fecha =
-            formatearFecha(v.fechaObj);
-
-        if(!agrupado[fecha])
-            agrupado[fecha]=0;
-
-        agrupado[fecha]+=v.IMPORTE;
 
     });
 
-    let labels = Object.keys(agrupado);
-
-    let valores = Object.values(agrupado);
-
-    if(chart) chart.destroy();
-
-    chart = new Chart(
-        document.getElementById("ventasChart"),
-        {
-            type:'bar',
-
-            data:{
-
-                labels:labels,
-
-                datasets:[{
-
-                    label:'Facturación',
-
-                    data:valores
-
-                }]
-            }
-        }
-    );
 }
 
 function actualizarCalendario(){
 
     let calendar =
-        document.getElementById("calendar");
+        document.getElementById(
+            "calendar"
+        );
 
     calendar.innerHTML = "";
 
     let year = 2026;
+
     let month = 4;
 
-    let firstDay =
+    let primerDia =
         new Date(year,month,1);
 
-    let startDay =
-        firstDay.getDay();
+    let inicio =
+        primerDia.getDay();
 
-    if(startDay == 0)
-        startDay = 7;
+    if(inicio===0)
+        inicio=7;
 
-    for(let i=1;i<startDay;i++){
+    for(let i=1;i<inicio;i++){
 
         let empty =
             document.createElement("div");
@@ -652,35 +634,48 @@ function actualizarCalendario(){
             "day empty";
 
         calendar.appendChild(empty);
+
     }
 
     let totalDias =
-        new Date(year,month+1,0).getDate();
+        new Date(year,month+1,0)
+        .getDate();
 
-    for(let day=1; day<=totalDias; day++){
+    for(let day=1;
+        day<=totalDias;
+        day++){
 
-        let fecha =
-            new Date(year,month,day);
+        let fechaTexto =
+            String(day).padStart(2,'0')
+            +"/05/2026";
 
         let ventasDia =
-            ventas.filter(v=>
-                v.fechaObj.getDate()==day &&
-                v.fechaObj.getMonth()==month
+            ventas.filter(v=>{
+
+            return(
+                formatearFecha(
+                    v.fechaObj
+                ) == fechaTexto
             );
+
+        });
 
         let facturacion =
             ventasDia.reduce(
-                (a,b)=>a+b.IMPORTE,0
+                (a,b)=>a+b.IMPORTE,
+                0
             );
 
         let utilidad =
             ventasDia.reduce(
-                (a,b)=>a+b.utilidad,0
+                (a,b)=>a+b.utilidad,
+                0
             );
 
         let cantidad =
             ventasDia.reduce(
-                (a,b)=>a+b.CANTIDAD,0
+                (a,b)=>a+b.CANTIDAD,
+                0
             );
 
         let clientes =
@@ -690,13 +685,16 @@ function actualizarCalendario(){
                 )
             ).size;
 
+        let fechaReal =
+            new Date(year,month,day);
+
         let color = "green";
 
-        if(utilidad < 3000)
-            color = "yellow";
+        if(utilidad<5000)
+            color="yellow";
 
-        if(utilidad < 1000)
-            color = "red";
+        if(utilidad<1000)
+            color="red";
 
         let div =
             document.createElement("div");
@@ -711,11 +709,11 @@ function actualizarCalendario(){
         </div>
 
         <div class="day-name">
-        ${dias[fecha.getDay()]}
+        ${dias[fechaReal.getDay()]}
         </div>
 
         <div class="day-data">
-        Facturación:
+        Venta:
         <b>${money(facturacion)}</b>
         </div>
 
@@ -738,14 +736,32 @@ function actualizarCalendario(){
 
         div.onclick = ()=>{
 
-            render(
-                formatearFecha(fecha)
-            );
+            render(fechaTexto);
 
         };
 
         calendar.appendChild(div);
+
     }
+
+}
+
+function formatearFecha(fecha){
+
+    let dia =
+        String(
+            fecha.getDate()
+        ).padStart(2,'0');
+
+    let mes =
+        String(
+            fecha.getMonth()+1
+        ).padStart(2,'0');
+
+    let anio =
+        fecha.getFullYear();
+
+    return `${dia}/${mes}/${anio}`;
 }
 
 function money(valor){
@@ -757,12 +773,6 @@ function money(valor){
             currency:'MXN'
         }
     );
-}
-
-function formatearFecha(fecha){
-
-    return fecha
-    .toLocaleDateString('es-MX');
 }
 
 cargarDatos();
