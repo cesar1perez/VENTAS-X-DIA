@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Ventas - Control de Calendario Analítico</title>
+    <title>Visualizador de Ventas - Calendario Blindado v3.3</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,43 +42,39 @@
             padding: 20px;
             margin-bottom: 24px;
         }
-        .form-select {
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            padding: 8px 12px;
-        }
         
-        /* Estilos del Calendario */
+        /* Calendario Mejorado con Efecto Mapa de Calor */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
+            gap: 10px;
             padding: 12px;
         }
         .calendar-header-day {
             text-align: center;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #64748b;
             text-transform: uppercase;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
         }
         .calendar-cell {
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            min-height: 72px;
-            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            min-height: 80px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease-in-out;
         }
         .calendar-cell:hover {
-            background-color: #e2e8f0;
-            transform: translateY(-1px);
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+            transform: scale(1.02);
         }
         .calendar-cell.empty {
             background-color: transparent;
@@ -86,45 +82,38 @@
             cursor: default;
             pointer-events: none;
         }
+        .calendar-cell.has-sales {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        .calendar-cell.has-sales:hover {
+            background-color: #dcfce7;
+        }
         .calendar-cell.active {
-            background-color: #eff6ff;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+            background-color: #eff6ff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
         }
         .calendar-cell .day-num {
             font-weight: 700;
-            font-size: 0.9rem;
-            color: #334155;
-        }
-        .calendar-cell.active .day-num {
-            color: #1d4ed8;
+            font-size: 1rem;
+            color: #1e293b;
         }
         .calendar-cell .day-sales {
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
             text-align: right;
-            color: #10b981;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: #15803d;
         }
 
         .table-responsive {
             max-height: 350px;
             overflow-y: auto;
         }
-        .table th {
-            position: sticky;
-            top: 0;
-            background-color: #f8fafc;
-            color: #475569;
-            z-index: 10;
-            font-size: 0.85rem;
-        }
         .loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             z-index: 9999;
             display: flex;
             flex-direction: column;
@@ -137,42 +126,37 @@
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-        <h5 class="mt-3 text-secondary fw-semibold">Analizando Base de Datos Real-Time...</h5>
+        <h5 class="mt-3 text-secondary fw-semibold">Sincronizando Base de Datos e Inyectando Calendario...</h5>
     </div>
 
     <nav class="navbar navbar-custom py-3 mb-4">
         <div class="container-fluid px-4">
             <span class="navbar-brand mb-0 h1 fw-bold d-flex align-items-center">
-                <i class="fa-solid fa-calendar-check me-2 text-primary"></i> 
-                Visualizador Comercial 3.2 — Diagnóstico de Mayo 2026
+                <i class="fa-solid fa-calendar-days me-2 text-primary"></i> 
+                Visualizador Comercial v3.3 (Calendario en Tiempo Real)
             </span>
-            <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-bolt me-1"></i> Sincronización Estable</span>
+            <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-bolt me-1"></i> Filtro de Clic Activo</span>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
         
-        <div id="diagnosticAlert" class="alert alert-warning border-warning d-none shadow-sm mb-4" role="alert">
-            <h5 class="alert-heading fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Aviso del Sistema de Diagnóstico</h5>
-            <p id="diagnosticMessage" class="mb-0"></p>
-        </div>
-
         <div class="filter-section">
             <div class="row g-3 align-items-end">
                 <div class="col-xl-4 col-md-6">
-                    <label for="filterVendedor" class="form-label small fw-semibold text-uppercase opacity-75">1. Vendedor</label>
+                    <label class="form-label small fw-semibold text-uppercase opacity-75">1. Vendedor</label>
                     <select id="filterVendedor" class="form-select text-dark">
                         <option value="TODOS">-- TODOS LOS VENDEDORES --</option>
                     </select>
                 </div>
                 <div class="col-xl-4 col-md-6">
-                    <label for="filterClasificacion" class="form-label small fw-semibold text-uppercase opacity-75">2. Clasificación de Producto</label>
+                    <label class="form-label small fw-semibold text-uppercase opacity-75">2. Clasificación de Producto</label>
                     <select id="filterClasificacion" class="form-select text-dark">
                         <option value="TODAS">-- TODAS LAS CLASIFICACIONES --</option>
                     </select>
                 </div>
                 <div class="col-xl-4 col-md-12">
-                    <label for="filterCliente" class="form-label small fw-semibold text-uppercase opacity-75">3. Cliente Específico</label>
+                    <label class="form-label small fw-semibold text-uppercase opacity-75">3. Cliente Específico</label>
                     <select id="filterCliente" class="form-select text-dark">
                         <option value="TODOS">-- TODOS LOS CLIENTES --</option>
                     </select>
@@ -182,12 +166,12 @@
 
         <div class="row">
             <div class="col-12">
-                <div class="card">
+                <div class="card shadow-sm">
                     <div class="card-header-custom d-flex justify-content-between align-items-center bg-light">
-                        <span class="fw-bold"><i class="fa-solid fa-calendar-days text-primary me-2"></i>Matriz de Monitoreo Diario: Mayo 2026</span>
+                        <span class="fw-bold text-primary"><i class="fa-solid fa-table-cells me-2"></i>Dashboard de Mayo 2026 (Haz clic en cualquier día con venta)</span>
                         <div>
-                            <span class="badge bg-primary me-2 px-3 py-2" id="selectedDayBadge">Mostrando: Todo el Mes</span>
-                            <button class="btn btn-sm btn-outline-secondary fw-semibold" id="btnClearDay"><i class="fa-solid fa-calendar-minus me-1"></i> Ver Todo el Mes</button>
+                            <span class="badge bg-dark me-2 px-3 py-2" id="selectedDayBadge">Mostrando: Todo el Mes</span>
+                            <button class="btn btn-sm btn-primary fw-semibold" id="btnClearDay"><i class="fa-solid fa-calendar-minus me-1"></i> Restablecer Mes Completo</button>
                         </div>
                     </div>
                     <div class="card-body p-2">
@@ -208,7 +192,7 @@
 
         <div class="row">
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card h-100 bg-white shadow-sm border-start border-primary border-4">
+                <div class="card h-100 bg-white border-start border-primary border-4">
                     <div class="card-body py-3">
                         <p class="text-muted small text-uppercase fw-semibold mb-1">Importe Facturado</p>
                         <h3 class="fw-bold text-dark mb-0" id="kpiFacturado">$0.00</h3>
@@ -216,7 +200,7 @@
                 </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card h-100 bg-white shadow-sm border-start border-danger border-4">
+                <div class="card h-100 bg-white border-start border-danger border-4">
                     <div class="card-body py-3">
                         <p class="text-muted small text-uppercase fw-semibold mb-1">Costo Comercial</p>
                         <h3 class="fw-bold text-dark mb-0" id="kpiCosto">$0.00</h3>
@@ -224,7 +208,7 @@
                 </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card h-100 bg-white shadow-sm border-start border-success border-4">
+                <div class="card h-100 bg-white border-start border-success border-4">
                     <div class="card-body py-3">
                         <p class="text-muted small text-uppercase fw-semibold mb-1 d-flex justify-content-between">
                             Utilidad Real <span class="badge bg-success" id="kpiMargen">0%</span>
@@ -234,9 +218,9 @@
                 </div>
             </div>
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card h-100 bg-white shadow-sm border-start border-warning border-4">
+                <div class="card h-100 bg-white border-start border-warning border-4">
                     <div class="card-body py-3">
-                        <p class="text-muted small text-uppercase fw-semibold mb-1">Volumen Despachado</p>
+                        <p class="text-muted small text-uppercase fw-semibold mb-1">Volumen Unidades</p>
                         <h3 class="fw-bold text-dark mb-0" id="kpiCantidad">0 u.</h3>
                     </div>
                 </div>
@@ -293,6 +277,29 @@
             </div>
         </div>
 
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark fw-bold">
+                <i class="fa-solid fa-bug me-2"></i>Panel de Control Técnico: Muestra de Lectura de Fechas
+            </div>
+            <div class="card-body bg-light small text-secondary">
+                <p class="mb-2 fw-semibold text-dark text-uppercase">Formato de fecha detectado automáticamente en tu archivo:</p>
+                <div id="detectedFormatBadge" class="badge bg-dark p-2 mb-3 fs-6">Analizando...</div>
+                <p class="fw-semibold text-dark text-uppercase mb-1">Muestra de las primeras 3 líneas interpretadas:</p>
+                <table class="table table-sm table-bordered bg-white mb-0" id="debugTable">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Texto original en Excel</th>
+                            <th>Día interpretado</th>
+                            <th>Mes interpretado</th>
+                            <th>Año interpretado</th>
+                            <th>Importe bruto</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="5" class="text-center text-muted">Esperando datos...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -303,21 +310,14 @@
         
         let globalData = [];
         let selectedDayNum = 'TODOS'; 
+        let isUSDateFormat = false; // Flag autodetectada
 
-        // 1. EXTRACTOR DE VALORES TOLERANTE A MAYÚSCULAS/MINÚSCULAS Y ESPACIOS
         function getCellValue(row, targetHeader) {
             if (row[targetHeader] !== undefined) return row[targetHeader];
-            
             let normalizedTarget = targetHeader.toUpperCase().replace(/[^A-Z0-9]/g, '');
             for (let key in row) {
                 let normalizedKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
                 if (normalizedKey === normalizedTarget) return row[key];
-            }
-            
-            for (let key in row) {
-                if (key.toLowerCase().trim().includes(targetHeader.toLowerCase().trim())) {
-                    return row[key];
-                }
             }
             return '';
         }
@@ -333,47 +333,58 @@
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
         }
 
-        // 2. PARSER DE FECHAS ULTRA-FLEXIBLE CON SOPORTE DE TEXTO
+        // DETECTOR INTELIGENTE DE FECHAS (Unifica Formatos de EE.UU, Latam y Números de Serie de Excel)
+        function analyzeDateFormatTrend(data) {
+            for (let row of data) {
+                let rawFecha = String(getCellValue(row, 'FECHA')).trim().replace(/-/g, '/');
+                let parts = rawFecha.split('/');
+                if (parts.length === 3) {
+                    let p1 = parseInt(parts[1], 10);
+                    // Si el segundo bloque de la fecha supera 12, el formato forzosamente es MM/DD/YYYY (EE.UU.)
+                    if (p1 > 12) {
+                        isUSDateFormat = true;
+                        break;
+                    }
+                }
+            }
+            document.getElementById('detectedFormatBadge').textContent = isUSDateFormat ? "Mes / Día / Año (Formato US)" : "Día / Mes / Año (Formato Latino / Estándar)";
+        }
+
         function parseDateFlexible(dateStr) {
             let day = 0, month = 0, year = 0;
             if (!dateStr) return { day, month, year };
 
-            let cleanStr = String(dateStr).trim().toLowerCase().replace(/-/g, '/');
-            let parts = cleanStr.split('/');
+            let cleanStr = String(dateStr).trim().replace(/-/g, '/');
 
+            // Caso 1: Soporte para Números de Serie de fecha puros de Excel (ej. 46145)
+            if (!isNaN(cleanStr) && cleanStr.length >= 5 && !cleanStr.includes('/')) {
+                let serial = parseFloat(cleanStr);
+                if (serial > 40000 && serial < 60000) {
+                    let baseDate = new Date(1899, 11, 30);
+                    baseDate.setDate(baseDate.getDate() + serial);
+                    return { day: baseDate.getDate(), month: baseDate.getMonth() + 1, year: baseDate.getFullYear() };
+                }
+            }
+
+            // Caso 2: Manejo de separadores diagonales tradicionales
+            let parts = cleanStr.split('/');
             if (parts.length === 3) {
-                let p0 = parts[0], p1 = parts[1], p2 = parts[2];
-                
-                if (p0.length === 4) { // Formato YYYY/MM/DD
-                    year = parseInt(p0, 10);
-                    month = parseMonthText(p1);
-                    day = parseInt(p2, 10);
-                } else { // Formato DD/MM/YYYY
-                    day = parseInt(p0, 10);
-                    month = parseMonthText(p1);
-                    year = parseInt(p2, 10);
+                let p0 = parseInt(parts[0], 10);
+                let p1 = parseInt(parts[1], 10);
+                let p2 = parseInt(parts[2], 10);
+
+                if (p0 > 100) { // Formato YYYY/MM/DD
+                    year = p0; month = p1; day = p2;
+                } else {
+                    if (isUSDateFormat) { // Si se detectó tendencia de EE.UU. -> MM/DD/YYYY
+                        month = p0; day = p1; year = p2;
+                    } else { // Formato Latino -> DD/MM/YYYY
+                        day = p0; month = p1; year = p2;
+                    }
                 }
                 if (year < 100) year += 2000;
             }
             return { day, month, year };
-        }
-
-        function parseMonthText(mStr) {
-            let m = parseInt(mStr, 10);
-            if (!isNaN(m)) return m;
-            if (mStr.includes('jan') || mStr.includes('ene')) return 1;
-            if (mStr.includes('feb')) return 2;
-            if (mStr.includes('mar')) return 3;
-            if (mStr.includes('abr') || mStr.includes('apr')) return 4;
-            if (mStr.includes('may')) return 5;
-            if (mStr.includes('jun')) return 6;
-            if (mStr.includes('jul')) return 7;
-            if (mStr.includes('ago') || mStr.includes('aug')) return 8;
-            if (mStr.includes('sep')) return 9;
-            if (mStr.includes('oct')) return 10;
-            if (mStr.includes('nov')) return 11;
-            if (mStr.includes('dic') || mStr.includes('dec')) return 12;
-            return 0;
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -382,11 +393,12 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
+                    analyzeDateFormatTrend(results.data);
                     processRawData(results.data);
                     document.getElementById('loadingOverlay').style.display = 'none';
                 },
                 error: function(err) {
-                    alert("Error crítico conectando con Google Sheets.");
+                    alert("Error crítico al enlazar Google Sheets.");
                     document.getElementById('loadingOverlay').style.display = 'none';
                 }
             });
@@ -412,57 +424,53 @@
                 };
             });
 
-            // EJECUCIÓN DEL SISTEMA DE DIAGNÓSTICO
-            runDiagnostics();
-
+            renderDebugTable();
             populateDropdownFilters();
             buildMayCalendar();
             setupEventListeners();
             updateDashboard();
         }
 
-        function runDiagnostics() {
-            let totalRows = globalData.length;
-            let may2026Count = 0;
-            let sampleDates = [];
-
-            globalData.forEach(item => {
-                if (item.mes === 5 && item.anio === 2026) may2026Count++;
-                if (sampleDates.length < 3 && item.fechaOriginal) sampleDates.push(`"${item.fechaOriginal}"`);
-            });
-
-            if (may2026Count === 0 && totalRows > 0) {
-                const diagBox = document.getElementById('diagnosticAlert');
-                const diagMsg = document.getElementById('diagnosticMessage');
-                diagBox.classList.remove('d-none');
-                diagMsg.innerHTML = `Leímos exitosamente <strong>${totalRows} renglones</strong> de tu Google Sheets, pero <strong>ninguno coincide con Mayo del año 2026</strong>. <br>
-                Las primeras fechas que detectamos en tu Excel son: <span class="badge bg-dark">${sampleDates.join('</span>, <span class="badge bg-dark">')}</span>.<br>
-                <em>Razón del fallo:</em> El calendario de la pantalla está fijo esperando el año 2026. Si tus datos son de otro año (ej. 2024 o 2025), al dar clic en los días del calendario el sistema no encuentra registros para filtrar.`;
+        function renderDebugTable() {
+            const tbody = document.querySelector('#debugTable tbody');
+            tbody.innerHTML = '';
+            let samples = globalData.slice(0, 3);
+            if(samples.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">El archivo llegó vacío.</td></tr>';
+                return;
             }
+            samples.forEach(s => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold">${s.fechaOriginal || 'Vacio'}</td>
+                    <td><span class="badge bg-primary">${s.dia}</span></td>
+                    <td><span class="badge bg-success">${s.mes}</span></td>
+                    <td><span class="badge bg-dark">${s.anio}</span></td>
+                    <td class="text-end fw-semibold text-success">${formatCurrency(s.importe)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function populateDropdownFilters() {
             const vendedores = [...new Set(globalData.map(item => item.vendedor))].filter(Boolean).sort();
             const filterVend = document.getElementById('filterVendedor');
             vendedores.forEach(v => {
-                let opt = document.createElement('option');
-                opt.value = v; opt.textContent = `Vendedor: ${v}`;
+                let opt = document.createElement('option'); opt.value = v; opt.textContent = `Vendedor: ${v}`;
                 filterVend.appendChild(opt);
             });
 
             const clasificaciones = [...new Set(globalData.map(item => item.clasificacion))].filter(Boolean).sort();
             const filterClas = document.getElementById('filterClasificacion');
             clasificaciones.forEach(c => {
-                let opt = document.createElement('option');
-                opt.value = c; opt.textContent = `${c}`;
+                let opt = document.createElement('option'); opt.value = c; opt.textContent = `${c}`;
                 filterClas.appendChild(opt);
             });
 
             const clientes = [...new Set(globalData.map(item => item.cliente))].filter(Boolean).sort();
             const filterCli = document.getElementById('filterCliente');
             clientes.forEach(c => {
-                let opt = document.createElement('option');
-                opt.value = c; opt.textContent = c;
+                let opt = document.createElement('option'); opt.value = c; opt.textContent = c;
                 filterCli.appendChild(opt);
             });
         }
@@ -471,34 +479,38 @@
             const calendarBody = document.getElementById('calendarBody');
             calendarBody.innerHTML = '';
 
-            const startDayOfWeek = 5; // Mayo 2026 inicia en Viernes
+            const startDayOfWeek = 5; // Mayo 2026 empieza en Viernes
             const totalDaysInMonth = 31;
 
+            // Rellenar días vacíos al inicio de la cuadrícula
             for (let i = 0; i < startDayOfWeek; i++) {
                 let emptyCell = document.createElement('div');
                 emptyCell.className = 'calendar-cell empty';
                 calendarBody.appendChild(emptyCell);
             }
 
+            // Crear los 31 días e inyectar montos totales
             for (let day = 1; day <= totalDaysInMonth; day++) {
                 let daySalesTotal = 0;
                 globalData.forEach(item => {
+                    // SUMA DIRECTA CON CORRECCIÓN AUTOMÁTICA
                     if (item.dia === day && item.mes === 5 && item.anio === 2026) {
                         daySalesTotal += item.importe;
                     }
                 });
 
                 let cell = document.createElement('div');
-                cell.className = 'calendar-cell';
+                cell.className = `calendar-cell ${daySalesTotal > 0 ? 'has-sales' : ''}`;
                 cell.id = `cal-day-${day}`;
 
                 let salesText = daySalesTotal > 0 ? formatCurrency(daySalesTotal) : '—';
                 
                 cell.innerHTML = `
                     <div class="day-num">${day}</div>
-                    <div class="day-sales" style="${daySalesTotal > 0 ? '':'color:#94a3b8; font-weight:normal;'}">${salesText}</div>
+                    <div class="day-sales">${salesText}</div>
                 `;
 
+                // Acción obligatoria al hacer clic
                 cell.addEventListener('click', () => {
                     document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('active'));
                     cell.classList.add('active');
@@ -535,11 +547,12 @@
             if (selClasif !== 'TODAS') filtered = filtered.filter(i => i.clasificacion === selClasif);
             if (selCliente !== 'TODOS') filtered = filtered.filter(i => i.cliente === selCliente);
             
+            // Filtro por clic de día en el calendario
             if (selectedDayNum !== 'TODOS') {
                 filtered = filtered.filter(i => i.dia === selectedDayNum && i.mes === 5 && i.anio === 2026);
             }
 
-            // KPIs
+            // Renderizar KPIs
             let totalFacturado = 0, totalCosto = 0, totalCantidad = 0;
             filtered.forEach(item => {
                 totalFacturado += item.importe;
@@ -558,7 +571,7 @@
             mb.textContent = `${margenGlobal.toFixed(1)}% Margen`;
             mb.className = `badge ${margenGlobal >= 23 ? 'bg-success' : margenGlobal >= 15 ? 'bg-warning text-dark' : 'bg-danger'}`;
 
-            // Tabla Artículos
+            // Actualizar Tabla Artículos
             let artMap = new Map();
             filtered.forEach(item => {
                 if (!artMap.has(item.descripcion)) {
@@ -587,7 +600,7 @@
                 tbodyArt.appendChild(tr);
             });
 
-            // Tabla Clientes
+            // Actualizar Tabla Clientes
             let cliMap = new Map();
             filtered.forEach(item => {
                 if (!cliMap.has(item.cliente)) cliMap.set(item.cliente, { imp: 0, cos: 0 });
