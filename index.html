@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Ventas - Control de Calendario Real-Time</title>
+    <title>Visualizador de Ventas - Control de Calendario Analítico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,21 +137,26 @@
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-        <h5 class="mt-3 text-secondary fw-semibold">Sincronizando Calendario Inteligente Real-Time...</h5>
+        <h5 class="mt-3 text-secondary fw-semibold">Analizando Base de Datos Real-Time...</h5>
     </div>
 
     <nav class="navbar navbar-custom py-3 mb-4">
         <div class="container-fluid px-4">
             <span class="navbar-brand mb-0 h1 fw-bold d-flex align-items-center">
                 <i class="fa-solid fa-calendar-check me-2 text-primary"></i> 
-                Visualizador Comercial 3.1 — Control de Mayo 2026
+                Visualizador Comercial 3.2 — Diagnóstico de Mayo 2026
             </span>
-            <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-bolt me-1"></i> Monitoreo en Tiempo Real</span>
+            <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-bolt me-1"></i> Sincronización Estable</span>
         </div>
     </nav>
 
     <div class="container-fluid px-4">
         
+        <div id="diagnosticAlert" class="alert alert-warning border-warning d-none shadow-sm mb-4" role="alert">
+            <h5 class="alert-heading fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Aviso del Sistema de Diagnóstico</h5>
+            <p id="diagnosticMessage" class="mb-0"></p>
+        </div>
+
         <div class="filter-section">
             <div class="row g-3 align-items-end">
                 <div class="col-xl-4 col-md-6">
@@ -299,9 +304,27 @@
         let globalData = [];
         let selectedDayNum = 'TODOS'; 
 
+        // 1. EXTRACTOR DE VALORES TOLERANTE A MAYÚSCULAS/MINÚSCULAS Y ESPACIOS
+        function getCellValue(row, targetHeader) {
+            if (row[targetHeader] !== undefined) return row[targetHeader];
+            
+            let normalizedTarget = targetHeader.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            for (let key in row) {
+                let normalizedKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (normalizedKey === normalizedTarget) return row[key];
+            }
+            
+            for (let key in row) {
+                if (key.toLowerCase().trim().includes(targetHeader.toLowerCase().trim())) {
+                    return row[key];
+                }
+            }
+            return '';
+        }
+
         function parseNum(val) {
             if (!val) return 0;
-            let clean = val.replace(/[^0-9.-]+/g, "");
+            let clean = String(val).replace(/[^0-9.-]+/g, "");
             let num = parseFloat(clean);
             return isNaN(num) ? 0 : num;
         }
@@ -310,31 +333,47 @@
             return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
         }
 
-        // MOTOR DE PROCESAMIENTO DE FECHAS ULTRA-FLEXIBLE
+        // 2. PARSER DE FECHAS ULTRA-FLEXIBLE CON SOPORTE DE TEXTO
         function parseDateFlexible(dateStr) {
             let day = 0, month = 0, year = 0;
             if (!dateStr) return { day, month, year };
 
-            // Reemplaza guiones por diagonales para unificar criterios
-            let cleanStr = dateStr.trim().replace(/-/g, '/');
+            let cleanStr = String(dateStr).trim().toLowerCase().replace(/-/g, '/');
             let parts = cleanStr.split('/');
 
             if (parts.length === 3) {
-                // Caso A: Formato Internacional YYYY/MM/DD
-                if (parts[0].length === 4) {
-                    year = parseInt(parts[0], 10);
-                    month = parseInt(parts[1], 10);
-                    day = parseInt(parts[2], 10);
-                } else {
-                    // Caso B: Formato Tradicional DD/MM/YYYY
-                    day = parseInt(parts[0], 10);
-                    month = parseInt(parts[1], 10);
-                    year = parseInt(parts[2], 10);
+                let p0 = parts[0], p1 = parts[1], p2 = parts[2];
+                
+                if (p0.length === 4) { // Formato YYYY/MM/DD
+                    year = parseInt(p0, 10);
+                    month = parseMonthText(p1);
+                    day = parseInt(p2, 10);
+                } else { // Formato DD/MM/YYYY
+                    day = parseInt(p0, 10);
+                    month = parseMonthText(p1);
+                    year = parseInt(p2, 10);
                 }
-                // Estandarizar año corto (ej. "26" -> 2026)
                 if (year < 100) year += 2000;
             }
             return { day, month, year };
+        }
+
+        function parseMonthText(mStr) {
+            let m = parseInt(mStr, 10);
+            if (!isNaN(m)) return m;
+            if (mStr.includes('jan') || mStr.includes('ene')) return 1;
+            if (mStr.includes('feb')) return 2;
+            if (mStr.includes('mar')) return 3;
+            if (mStr.includes('abr') || mStr.includes('apr')) return 4;
+            if (mStr.includes('may')) return 5;
+            if (mStr.includes('jun')) return 6;
+            if (mStr.includes('jul')) return 7;
+            if (mStr.includes('ago') || mStr.includes('aug')) return 8;
+            if (mStr.includes('sep')) return 9;
+            if (mStr.includes('oct')) return 10;
+            if (mStr.includes('nov')) return 11;
+            if (mStr.includes('dic') || mStr.includes('dec')) return 12;
+            return 0;
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -347,7 +386,7 @@
                     document.getElementById('loadingOverlay').style.display = 'none';
                 },
                 error: function(err) {
-                    alert("Error en la sincronización de datos con Google Sheets.");
+                    alert("Error crítico conectando con Google Sheets.");
                     document.getElementById('loadingOverlay').style.display = 'none';
                 }
             });
@@ -355,21 +394,26 @@
 
         function processRawData(data) {
             globalData = data.map(row => {
-                let dateInfo = parseDateFlexible(row['FECHA']);
+                let rawFecha = getCellValue(row, 'FECHA');
+                let dateInfo = parseDateFlexible(rawFecha);
                 return {
-                    codigo: row['CODIGO'] || '',
-                    descripcion: (row['DESCRIPCION'] || 'SIN DETALLE').toUpperCase().trim(),
-                    vendedor: (row['COD VEND 1'] || 'SIN VENDEDOR').toUpperCase().trim(),
-                    cantidad: parseNum(row['CANTIDAD']),
-                    importe: parseNum(row['IMPORTE']),
-                    costo: parseNum(row['COSTO']),
-                    cliente: (row['NOMBRE CLIENTE'] || 'CLIENTE GENERAL').toUpperCase().trim(),
-                    clasificacion: (row['CLASIFICACION'] || 'OTROS').toUpperCase().trim(),
+                    codigo: getCellValue(row, 'CODIGO'),
+                    descripcion: String(getCellValue(row, 'DESCRIPCION') || 'SIN DETALLE').toUpperCase().trim(),
+                    vendedor: String(getCellValue(row, 'COD VEND 1') || 'SIN VENDEDOR').toUpperCase().trim(),
+                    cantidad: parseNum(getCellValue(row, 'CANTIDAD')),
+                    importe: parseNum(getCellValue(row, 'IMPORTE')),
+                    costo: parseNum(getCellValue(row, 'COSTO')),
+                    cliente: String(getCellValue(row, 'NOMBRE CLIENTE') || 'CLIENTE GENERAL').toUpperCase().trim(),
+                    clasificacion: String(getCellValue(row, 'CLASIFICACION') || 'OTROS').toUpperCase().trim(),
+                    fechaOriginal: rawFecha,
                     dia: dateInfo.day,
                     mes: dateInfo.month,
                     anio: dateInfo.year
                 };
             });
+
+            // EJECUCIÓN DEL SISTEMA DE DIAGNÓSTICO
+            runDiagnostics();
 
             populateDropdownFilters();
             buildMayCalendar();
@@ -377,8 +421,27 @@
             updateDashboard();
         }
 
+        function runDiagnostics() {
+            let totalRows = globalData.length;
+            let may2026Count = 0;
+            let sampleDates = [];
+
+            globalData.forEach(item => {
+                if (item.mes === 5 && item.anio === 2026) may2026Count++;
+                if (sampleDates.length < 3 && item.fechaOriginal) sampleDates.push(`"${item.fechaOriginal}"`);
+            });
+
+            if (may2026Count === 0 && totalRows > 0) {
+                const diagBox = document.getElementById('diagnosticAlert');
+                const diagMsg = document.getElementById('diagnosticMessage');
+                diagBox.classList.remove('d-none');
+                diagMsg.innerHTML = `Leímos exitosamente <strong>${totalRows} renglones</strong> de tu Google Sheets, pero <strong>ninguno coincide con Mayo del año 2026</strong>. <br>
+                Las primeras fechas que detectamos en tu Excel son: <span class="badge bg-dark">${sampleDates.join('</span>, <span class="badge bg-dark">')}</span>.<br>
+                <em>Razón del fallo:</em> El calendario de la pantalla está fijo esperando el año 2026. Si tus datos son de otro año (ej. 2024 o 2025), al dar clic en los días del calendario el sistema no encuentra registros para filtrar.`;
+            }
+        }
+
         function populateDropdownFilters() {
-            // Vendedores
             const vendedores = [...new Set(globalData.map(item => item.vendedor))].filter(Boolean).sort();
             const filterVend = document.getElementById('filterVendedor');
             vendedores.forEach(v => {
@@ -387,7 +450,6 @@
                 filterVend.appendChild(opt);
             });
 
-            // Clasificaciones
             const clasificaciones = [...new Set(globalData.map(item => item.clasificacion))].filter(Boolean).sort();
             const filterClas = document.getElementById('filterClasificacion');
             clasificaciones.forEach(c => {
@@ -396,7 +458,6 @@
                 filterClas.appendChild(opt);
             });
 
-            // Clientes
             const clientes = [...new Set(globalData.map(item => item.cliente))].filter(Boolean).sort();
             const filterCli = document.getElementById('filterCliente');
             clientes.forEach(c => {
@@ -410,8 +471,7 @@
             const calendarBody = document.getElementById('calendarBody');
             calendarBody.innerHTML = '';
 
-            // Mayo 2026 inicia en Viernes (5 espacios en blanco al inicio: Dom=0, Lun=1... Jue=4)
-            const startDayOfWeek = 5; 
+            const startDayOfWeek = 5; // Mayo 2026 inicia en Viernes
             const totalDaysInMonth = 31;
 
             for (let i = 0; i < startDayOfWeek; i++) {
@@ -421,7 +481,6 @@
             }
 
             for (let day = 1; day <= totalDaysInMonth; day++) {
-                // CALCULO NUMÉRICO DIRECTO: Evita errores de texto por diagonales o guiones
                 let daySalesTotal = 0;
                 globalData.forEach(item => {
                     if (item.dia === day && item.mes === 5 && item.anio === 2026) {
@@ -476,7 +535,6 @@
             if (selClasif !== 'TODAS') filtered = filtered.filter(i => i.clasificacion === selClasif);
             if (selCliente !== 'TODOS') filtered = filtered.filter(i => i.cliente === selCliente);
             
-            // FILTRADO NUMÉRICO INTEGRADO
             if (selectedDayNum !== 'TODOS') {
                 filtered = filtered.filter(i => i.dia === selectedDayNum && i.mes === 5 && i.anio === 2026);
             }
