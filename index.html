@@ -151,7 +151,7 @@ select{
     background:white;
     border-radius:24px;
     padding:18px;
-    min-height:240px;
+    min-height:360px;
     cursor:pointer;
     border-top:8px solid #10b981;
     box-shadow:0 6px 16px rgba(0,0,0,.08);
@@ -795,18 +795,67 @@ function actualizarCalendario(){
                 0
             );
 
-        let cantidad =
-            ventasDia.reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
-
         let clientes =
             new Set(
                 ventasDia.map(
                     v=>v["NOMBRE CLIENTE"]
                 )
             ).size;
+
+        let acumuladores =
+            ventasDia
+            .filter(v=>
+                v["CLASIFICACION"]
+                ?.includes("5 ACUMULAD")
+            )
+            .reduce(
+                (a,b)=>a+b.CANTIDAD,
+                0
+            );
+
+        let lubricantes =
+            ventasDia
+            .filter(v=>
+                v["CLASIFICACION"]
+                ?.includes("7 LUBRICAN")
+            )
+            .reduce(
+                (a,b)=>a+b.CANTIDAD,
+                0
+            );
+
+        let motobaterias =
+            ventasDia
+            .filter(v=>
+                v["CLASIFICACION"]
+                ?.includes("8 MOTOBAT")
+            )
+            .reduce(
+                (a,b)=>a+b.CANTIDAD,
+                0
+            );
+
+        let filtros =
+            ventasDia
+            .filter(v=>
+                v["CLASIFICACION"]
+                ?.includes("6 FITROS")
+            )
+            .reduce(
+                (a,b)=>a+b.CANTIDAD,
+                0
+            );
+
+        let cascos =
+            ventasDia
+            .filter(v=>
+                v["CLASIFICACION"]
+                ?.includes("9 OTROS")
+            )
+            .reduce(
+                (a,b)=>a+b.CANTIDAD,
+                0
+            );
 
         let fechaReal =
             new Date(year,month,day);
@@ -851,8 +900,28 @@ function actualizarCalendario(){
         </div>
 
         <div class="day-data">
-        Artículos
-        <b>${cantidad}</b>
+        Acumuladores
+        <b>${acumuladores}</b>
+        </div>
+
+        <div class="day-data">
+        Lubricantes
+        <b>${lubricantes}</b>
+        </div>
+
+        <div class="day-data">
+        Motobaterías
+        <b>${motobaterias}</b>
+        </div>
+
+        <div class="day-data">
+        Filtros
+        <b>${filtros}</b>
+        </div>
+
+        <div class="day-data">
+        Cascos / Otros
+        <b>${cascos}</b>
         </div>
 
         `;
