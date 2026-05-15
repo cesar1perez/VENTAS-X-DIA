@@ -209,6 +209,38 @@ select{
     margin-top:2px;
 }
 
+/* ===== COLORES POR CATEGORÍA ===== */
+
+.acumuladores b{
+    color:#2563eb !important;
+}
+
+.lubricantes b{
+    color:#16a34a !important;
+}
+
+.motobaterias b{
+    color:#9333ea !important;
+}
+
+.filtros b{
+    color:#ea580c !important;
+}
+
+.cascos b{
+    color:#dc2626 !important;
+}
+
+/* ===== UTILIDAD POSITIVA / NEGATIVA ===== */
+
+.utilidad-positiva b{
+    color:#16a34a !important;
+}
+
+.utilidad-negativa b{
+    color:#dc2626 !important;
+}
+
 /* TABLE */
 
 .table-container{
@@ -250,7 +282,7 @@ tr:hover{
 
 }
 
-@media(max-width:700px){
+@media(max-width:900px){
 
     .calendar{
         grid-template-columns:repeat(1,1fr);
@@ -262,6 +294,35 @@ tr:hover{
 
     .day{
         min-height:auto;
+        padding:20px;
+    }
+
+    .day-number{
+        font-size:42px;
+    }
+
+    .day-name{
+        font-size:20px;
+    }
+
+    .day-data{
+        font-size:18px;
+    }
+
+    .day-data b{
+        font-size:26px;
+    }
+
+    .section h2{
+        font-size:24px;
+    }
+
+    .card p{
+        font-size:28px;
+    }
+
+    table{
+        min-width:1200px;
     }
 
 }
@@ -889,7 +950,7 @@ function actualizarCalendario(){
         <b>${money(facturacion)}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data ${utilidad >= 0 ? 'utilidad-positiva' : 'utilidad-negativa'}">
         Utilidad
         <b>${money(utilidad)}</b>
         </div>
@@ -899,27 +960,27 @@ function actualizarCalendario(){
         <b>${clientes}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data acumuladores">
         Acumuladores
         <b>${acumuladores}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data lubricantes">
         Lubricantes
         <b>${lubricantes}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data motobaterias">
         Motobaterías
         <b>${motobaterias}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data filtros">
         Filtros
         <b>${filtros}</b>
         </div>
 
-        <div class="day-data">
+        <div class="day-data cascos">
         Cascos / Otros
         <b>${cascos}</b>
         </div>
