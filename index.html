@@ -57,7 +57,7 @@ header p{
 
 .filters{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:18px;
     margin-bottom:28px;
 }
@@ -156,7 +156,6 @@ select{
     border-top:8px solid #10b981;
     box-shadow:0 6px 16px rgba(0,0,0,.08);
     transition:.25s;
-    position:relative;
 }
 
 .day:hover{
@@ -205,40 +204,37 @@ select{
 .day-data b{
     display:block;
     font-size:22px;
-    color:#0f172a;
     margin-top:2px;
 }
 
-/* ===== COLORES POR CATEGORÍA ===== */
+/* COLORES */
 
 .acumuladores b{
-    color:#2563eb !important;
+    color:#2563eb;
 }
 
 .lubricantes b{
-    color:#16a34a !important;
+    color:#16a34a;
 }
 
 .motobaterias b{
-    color:#9333ea !important;
+    color:#9333ea;
 }
 
 .filtros b{
-    color:#ea580c !important;
+    color:#ea580c;
 }
 
 .cascos b{
-    color:#dc2626 !important;
+    color:#dc2626;
 }
 
-/* ===== UTILIDAD POSITIVA / NEGATIVA ===== */
-
 .utilidad-positiva b{
-    color:#16a34a !important;
+    color:#16a34a;
 }
 
 .utilidad-negativa b{
-    color:#dc2626 !important;
+    color:#dc2626;
 }
 
 /* TABLE */
@@ -274,18 +270,10 @@ tr:hover{
 
 /* RESPONSIVE */
 
-@media(max-width:1200px){
-
-    .calendar{
-        grid-template-columns:repeat(3,1fr);
-    }
-
-}
-
 @media(max-width:900px){
 
     .calendar{
-        grid-template-columns:repeat(1,1fr);
+        grid-template-columns:1fr;
     }
 
     .calendar-header{
@@ -294,7 +282,6 @@ tr:hover{
 
     .day{
         min-height:auto;
-        padding:20px;
     }
 
     .day-number{
@@ -302,7 +289,7 @@ tr:hover{
     }
 
     .day-name{
-        font-size:20px;
+        font-size:22px;
     }
 
     .day-data{
@@ -310,14 +297,6 @@ tr:hover{
     }
 
     .day-data b{
-        font-size:26px;
-    }
-
-    .section h2{
-        font-size:24px;
-    }
-
-    .card p{
         font-size:28px;
     }
 
@@ -361,6 +340,10 @@ Panel ejecutivo comercial • Ventas • Utilidad • Clientes • Productos
 <option value="">Todas las clasificaciones</option>
 </select>
 
+<select id="mesFilter"></select>
+
+<select id="anioFilter"></select>
+
 </div>
 
 <!-- KPI -->
@@ -403,7 +386,9 @@ Panel ejecutivo comercial • Ventas • Utilidad • Clientes • Productos
 
 <div class="section">
 
-<h2>Calendario Comercial • Mayo 2026</h2>
+<h2 id="calendarTitle">
+Calendario Comercial
+</h2>
 
 <div class="calendar-header">
 
@@ -466,7 +451,6 @@ const csvUrl =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDY9ek9N_ePgcaLznpzxUj8aZfJvWsbmjDMdC972iN8OVsxIz-cNLM0rpmLPyD2OztamjBYoZKSUUf/pub?output=csv";
 
 let ventas = [];
-
 let ventasFiltradas = [];
 
 const dias = [
@@ -479,6 +463,21 @@ const dias = [
 'Sábado'
 ];
 
+const meses = [
+'Enero',
+'Febrero',
+'Marzo',
+'Abril',
+'Mayo',
+'Junio',
+'Julio',
+'Agosto',
+'Septiembre',
+'Octubre',
+'Noviembre',
+'Diciembre'
+];
+
 function limpiarNumero(valor){
 
     if(!valor) return 0;
@@ -486,11 +485,8 @@ function limpiarNumero(valor){
     valor = valor.toString();
 
     valor = valor.replace(/"/g,'');
-
     valor = valor.replace(/\$/g,'');
-
     valor = valor.replace(/,/g,'');
-
     valor = valor.trim();
 
     return Number(valor) || 0;
@@ -517,29 +513,20 @@ function cargarDatos(){
     Papa.parse(csvUrl,{
 
         download:true,
-
         header:true,
-
         skipEmptyLines:true,
 
         complete:function(results){
 
             ventas = results.data.map(v=>{
 
-                let fecha =
-                    convertirFecha(v.FECHA);
+                let fecha = convertirFecha(v.FECHA);
 
-                if(!fecha)
-                    return null;
+                if(!fecha) return null;
 
-                let importe =
-                    limpiarNumero(v.IMPORTE);
-
-                let costo =
-                    limpiarNumero(v.COSTO);
-
-                let cantidad =
-                    limpiarNumero(v.CANTIDAD);
+                let importe = limpiarNumero(v.IMPORTE);
+                let costo = limpiarNumero(v.COSTO);
+                let cantidad = limpiarNumero(v.CANTIDAD);
 
                 return{
 
@@ -555,9 +542,7 @@ function cargarDatos(){
 
                     utilidad:importe-costo,
 
-                    dia:dias[
-                        fecha.getDay()
-                    ]
+                    dia:dias[fecha.getDay()]
                 }
 
             }).filter(v=>v);
@@ -576,31 +561,26 @@ function cargarFiltros(){
 
     llenarSelect(
         "vendedorFilter",
-        [...new Set(
-            ventas.map(v=>v["COD VEND 1"])
-        )]
+        [...new Set(ventas.map(v=>v["COD VEND 1"]))]
     );
 
     llenarSelect(
         "clienteFilter",
-        [...new Set(
-            ventas.map(v=>v["NOMBRE CLIENTE"])
-        )]
+        [...new Set(ventas.map(v=>v["NOMBRE CLIENTE"]))]
     );
 
     llenarSelect(
         "clasificacionFilter",
-        [...new Set(
-            ventas.map(v=>v["CLASIFICACION"])
-        )]
+        [...new Set(ventas.map(v=>v["CLASIFICACION"]))]
     );
 
+    cargarMeses();
+    cargarAnios();
 }
 
 function llenarSelect(id,data){
 
-    let select =
-        document.getElementById(id);
+    let select = document.getElementById(id);
 
     if(select.options.length > 1)
         return;
@@ -609,12 +589,67 @@ function llenarSelect(id,data){
 
         if(!item) return;
 
+        let option = document.createElement("option");
+
+        option.value = item;
+        option.textContent = item;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+function cargarMeses(){
+
+    let select =
+        document.getElementById("mesFilter");
+
+    if(select.options.length > 0)
+        return;
+
+    meses.forEach((mes,index)=>{
+
         let option =
             document.createElement("option");
 
-        option.value = item;
+        option.value = index;
+        option.textContent = mes;
 
-        option.textContent = item;
+        if(index === 4)
+            option.selected = true;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+function cargarAnios(){
+
+    let select =
+        document.getElementById("anioFilter");
+
+    if(select.options.length > 0)
+        return;
+
+    let anios =
+        [...new Set(
+            ventas.map(
+                v=>v.fechaObj.getFullYear()
+            )
+        )];
+
+    anios.forEach(anio=>{
+
+        let option =
+            document.createElement("option");
+
+        option.value = anio;
+        option.textContent = anio;
+
+        if(anio == 2026)
+            option.selected = true;
 
         select.appendChild(option);
 
@@ -635,19 +670,19 @@ document.querySelectorAll("select")
 function render(fechaFiltro=null){
 
     let vendedor =
-        document.getElementById(
-            "vendedorFilter"
-        ).value;
+        document.getElementById("vendedorFilter").value;
 
     let cliente =
-        document.getElementById(
-            "clienteFilter"
-        ).value;
+        document.getElementById("clienteFilter").value;
 
     let clasificacion =
-        document.getElementById(
-            "clasificacionFilter"
-        ).value;
+        document.getElementById("clasificacionFilter").value;
+
+    let mes =
+        Number(document.getElementById("mesFilter").value);
+
+    let anio =
+        Number(document.getElementById("anioFilter").value);
 
     ventasFiltradas =
         ventas.filter(v=>{
@@ -666,12 +701,15 @@ function render(fechaFiltro=null){
             v["CLASIFICACION"] != clasificacion)
             ok = false;
 
+        if(v.fechaObj.getMonth() != mes)
+            ok = false;
+
+        if(v.fechaObj.getFullYear() != anio)
+            ok = false;
+
         if(fechaFiltro){
 
-            let fecha =
-                formatearFecha(v.fechaObj);
-
-            if(fecha != fechaFiltro)
+            if(formatearFecha(v.fechaObj) != fechaFiltro)
                 ok = false;
         }
 
@@ -684,39 +722,26 @@ function render(fechaFiltro=null){
     actualizarTabla(ventasFiltradas);
 
     actualizarCalendario();
+
 }
 
 function actualizarKPIs(data){
 
     let facturacion =
-        data.reduce(
-            (a,b)=>a+b.IMPORTE,
-            0
-        );
+        data.reduce((a,b)=>a+b.IMPORTE,0);
 
     let costo =
-        data.reduce(
-            (a,b)=>a+b.COSTO,
-            0
-        );
+        data.reduce((a,b)=>a+b.COSTO,0);
 
     let utilidad =
-        data.reduce(
-            (a,b)=>a+b.utilidad,
-            0
-        );
+        data.reduce((a,b)=>a+b.utilidad,0);
 
     let cantidad =
-        data.reduce(
-            (a,b)=>a+b.CANTIDAD,
-            0
-        );
+        data.reduce((a,b)=>a+b.CANTIDAD,0);
 
     let clientes =
         new Set(
-            data.map(
-                v=>v["NOMBRE CLIENTE"]
-            )
+            data.map(v=>v["NOMBRE CLIENTE"])
         ).size;
 
     let margen =
@@ -740,16 +765,14 @@ function actualizarKPIs(data){
     .textContent = clientes;
 
     document.getElementById("margen")
-    .textContent =
-        margen.toFixed(1)+"%";
+    .textContent = margen.toFixed(1)+"%";
+
 }
 
 function actualizarTabla(data){
 
     let tbody =
-        document.getElementById(
-            "tablaVentas"
-        );
+        document.getElementById("tablaVentas");
 
     tbody.innerHTML = "";
 
@@ -790,15 +813,19 @@ function actualizarTabla(data){
 function actualizarCalendario(){
 
     let calendar =
-        document.getElementById(
-            "calendar"
-        );
+        document.getElementById("calendar");
 
     calendar.innerHTML = "";
 
-    let year = 2026;
+    let month =
+        Number(document.getElementById("mesFilter").value);
 
-    let month = 4;
+    let year =
+        Number(document.getElementById("anioFilter").value);
+
+    document.getElementById("calendarTitle")
+    .textContent =
+        `Calendario Comercial • ${meses[month]} ${year}`;
 
     let primerDia =
         new Date(year,month,1);
@@ -822,104 +849,59 @@ function actualizarCalendario(){
     }
 
     let totalDias =
-        new Date(year,month+1,0)
-        .getDate();
+        new Date(year,month+1,0).getDate();
 
     for(let day=1;
         day<=totalDias;
         day++){
 
+        let fechaReal =
+            new Date(year,month,day);
+
         let fechaTexto =
-            String(day).padStart(2,'0')
-            +"/05/2026";
+            formatearFecha(fechaReal);
 
         let ventasDia =
-            ventasFiltradas.filter(v=>{
-
-            return(
-                formatearFecha(
-                    v.fechaObj
-                ) == fechaTexto
+            ventasFiltradas.filter(v=>
+                formatearFecha(v.fechaObj)
+                == fechaTexto
             );
-
-        });
 
         let facturacion =
-            ventasDia.reduce(
-                (a,b)=>a+b.IMPORTE,
-                0
-            );
+            ventasDia.reduce((a,b)=>a+b.IMPORTE,0);
 
         let utilidad =
-            ventasDia.reduce(
-                (a,b)=>a+b.utilidad,
-                0
-            );
+            ventasDia.reduce((a,b)=>a+b.utilidad,0);
 
         let clientes =
             new Set(
-                ventasDia.map(
-                    v=>v["NOMBRE CLIENTE"]
-                )
+                ventasDia.map(v=>v["NOMBRE CLIENTE"])
             ).size;
 
         let acumuladores =
             ventasDia
-            .filter(v=>
-                v["CLASIFICACION"]
-                ?.includes("5 ACUMULAD")
-            )
-            .reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
+            .filter(v=>v["CLASIFICACION"]?.includes("5 ACUMULAD"))
+            .reduce((a,b)=>a+b.CANTIDAD,0);
 
         let lubricantes =
             ventasDia
-            .filter(v=>
-                v["CLASIFICACION"]
-                ?.includes("7 LUBRICAN")
-            )
-            .reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
+            .filter(v=>v["CLASIFICACION"]?.includes("7 LUBRICAN"))
+            .reduce((a,b)=>a+b.CANTIDAD,0);
 
         let motobaterias =
             ventasDia
-            .filter(v=>
-                v["CLASIFICACION"]
-                ?.includes("8 MOTOBAT")
-            )
-            .reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
+            .filter(v=>v["CLASIFICACION"]?.includes("8 MOTOBAT"))
+            .reduce((a,b)=>a+b.CANTIDAD,0);
 
         let filtros =
             ventasDia
-            .filter(v=>
-                v["CLASIFICACION"]
-                ?.includes("6 FITROS")
-            )
-            .reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
+            .filter(v=>v["CLASIFICACION"]?.includes("6 FITROS"))
+            .reduce((a,b)=>a+b.CANTIDAD,0);
 
         let cascos =
             ventasDia
-            .filter(v=>
-                v["CLASIFICACION"]
-                ?.includes("9 OTROS")
-            )
-            .reduce(
-                (a,b)=>a+b.CANTIDAD,
-                0
-            );
-
-        let fechaReal =
-            new Date(year,month,day);
+            .filter(v=>v["CLASIFICACION"]?.includes("9 OTROS"))
+            .reduce((a,b)=>a+b.CANTIDAD,0);
 
         let color = "green";
 
@@ -1002,19 +984,16 @@ function actualizarCalendario(){
 function formatearFecha(fecha){
 
     let dia =
-        String(
-            fecha.getDate()
-        ).padStart(2,'0');
+        String(fecha.getDate()).padStart(2,'0');
 
     let mes =
-        String(
-            fecha.getMonth()+1
-        ).padStart(2,'0');
+        String(fecha.getMonth()+1).padStart(2,'0');
 
     let anio =
         fecha.getFullYear();
 
     return `${dia}/${mes}/${anio}`;
+
 }
 
 function money(valor){
@@ -1026,6 +1005,7 @@ function money(valor){
             currency:'MXN'
         }
     );
+
 }
 
 cargarDatos();
